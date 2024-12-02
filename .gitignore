@@ -7,6 +7,7 @@ __pycache__/
 *.so
 
 working.ipynb
+.DS_Store
 
 # Distribution / packaging
 .Python

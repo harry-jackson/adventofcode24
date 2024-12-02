@@ -48,7 +48,7 @@ with reports as
     diff <= -1 and diff >= -3 as decrease_rule
     from reports_with_removed_level
     where level_index != removed_level_index
-), passing_rules as 
+), passing_reports as 
 (
     -- Check if all increase rules are passed or all decrease rules are passed. 
     select 
@@ -58,24 +58,24 @@ with reports as
     from rules
     where lagged_value is not null
     group by report, removed_level_index
-), passing_rules_with_up_to_one_removed_level as 
+), passing_reports_with_up_to_one_removed_level as 
 (
     -- Check if the report passed with any of the levels removed, or with no levels removed. 
     select
     report,
     bool_or(pass) as pass
-    from passing_rules
+    from passing_reports
     group by report
 )
 
 select 
 (
     -- Part 1: check how many reports passed with removed_level_index 0 (indicating no levels removed). 
-    select count(*) from passing_rules 
+    select count(*) from passing_reports 
     where pass and removed_level_index == 0
 ) as part_1,
 (
     -- Part 2: check how many passed with up to 1 level removed. 
-    select count(*) from passing_rules_with_up_to_one_removed_level
+    select count(*) from passing_reports_with_up_to_one_removed_level
     where pass
 ) as part_2
