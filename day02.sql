@@ -1,18 +1,16 @@
 -- duckdb solution
 
-drop table if exists input_data;
-
--- Read the input data.
--- Split into list of levels.
--- Add a row number to indicate report number. 
-create table input_data as 
-select raw_input,
-str_split(raw_input, ' ') as level_list,
-row_number() over() as report
-from 
-read_csv('data/day02.txt', columns = {'raw_input': 'varchar'}, header = False);
-
-with reports as
+with input_data as 
+(
+    -- Read the input data.
+    -- Split into list of levels.
+    -- Add a row number to indicate report number. 
+    select raw_input,
+    str_split(raw_input, ' ') as level_list,
+    row_number() over() as report
+    from 
+    read_csv('data/day02.txt', columns = {'raw_input': 'varchar'}, header = False)
+), reports as
 (
     -- Unnest the level_list into level_value and add a level_index
     select 

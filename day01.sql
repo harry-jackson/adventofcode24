@@ -1,22 +1,19 @@
 -- duckdb solution
 
-drop table if exists input_data;
-
--- Read the input data.
--- Split into left_input and right_input.
--- Calculate the order of the two input columns as left_index and right_index.
-create table input_data as 
-select 
-raw_input,
-str_split_regex(raw_input, ' +') as input_list,
-cast(input_list[1] as int) as left_input,
-cast(input_list[2] as int) as right_input,
-row_number() over (order by left_input) as left_index,
-row_number() over (order by right_input) as right_index
-from 
-read_csv('data/day01.txt', columns = {'raw_input': 'varchar'}, header = False);
-
-with sorted_input_data as
+with input_data as (
+    -- Read the input data.
+    -- Split into left_input and right_input.
+    -- Calculate the order of the two input columns as left_index and right_index.
+    select 
+    raw_input,
+    str_split_regex(raw_input, ' +') as input_list,
+    cast(input_list[1] as int) as left_input,
+    cast(input_list[2] as int) as right_input,
+    row_number() over (order by left_input) as left_index,
+    row_number() over (order by right_input) as right_index
+    from 
+    read_csv('data/day01.txt', columns = {'raw_input': 'varchar'}, header = False)
+), sorted_input_data as
 (
     --- Calculate the absolute difference between the ordered left_input & right_input. 
     select 
