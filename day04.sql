@@ -33,29 +33,27 @@ shifted_letters as
     letter
     from steps cross join shift_i cross join shift_j cross join letters 
     where not (d_i == 0 and d_j == 0)
+    order by step
 ), three_character_strings as 
 (
     -- Three character strings formed by concatenating letters shifted
     -- in the same direction by 0 to 2 steps. 
     select
-    step_0.d_i,
-    step_0.d_j,
-    step_0.i,
-    step_0.j,
-    step_0.letter || step_1.letter || step_2.letter as three_character_string
-    from (select * from shifted_letters where step == 0) step_0
-    inner join (select * from shifted_letters where step == 1) step_1
-    on step_0.i = step_1.i and step_0.j = step_1.j and step_0.d_i = step_1.d_i and step_0.d_j = step_1.d_j
-    inner join (select * from shifted_letters where step == 2) step_2
-    on step_0.i = step_2.i and step_0.j = step_2.j and step_0.d_i = step_2.d_i and step_0.d_j = step_2.d_j
+    d_i,
+    d_j,
+    i,
+    j,
+    string_agg(letter, '') as three_character_string
+    from shifted_letters 
+    where step < 3
+    group by d_i, d_j, i, j
 ), four_character_strings as 
 (
-    -- Shift one more time to get four character strings. 
+    -- Similar for four-character strings. 
     select
-    three_character_string || step_3.letter as four_character_string
-    from three_character_strings step_2
-    inner join (select * from shifted_letters where step == 3) step_3
-    on step_2.i = step_3.i and step_2.j = step_3.j and step_2.d_i = step_3.d_i and step_2.d_j = step_3.d_j
+    string_agg(letter, '') as four_character_string
+    from shifted_letters
+    group by d_i, d_j, i, j
 ), central_diagonal_mas_indices as 
 (
     -- Find all diagonal MAS strings (i.e. ones where both d_i and d_j != 0).
