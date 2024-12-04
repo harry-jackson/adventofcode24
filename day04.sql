@@ -15,62 +15,55 @@ with input_data as
     generate_subscripts(letter_list, 1) as j,
     unnest(letter_list) as letter
     from input_data 
-), shift_i as 
+), 
+steps as (select * from (values (0), (1), (2), (3)) as t(step)),
+shift_i as (select * from (values (-1), (0), (1)) as t (d_i)),
+shift_j as (select d_i as d_j from shift_i),
+shifted_letters as
 (
-    select * from (values (-1), (0), (1)) as t (d_i)
-), shift_j as
-(
-    select d_i as d_j from shift_i
-),
-shift_ij as 
-(
-    -- Table to shift i and j indices in a direction. 
-    select d_i, d_j from shift_i cross join shift_j where not (d_i == 0 and d_j == 0)
-), shifted_letters as
-(
-    -- Letters with indices shifted in direction d_i for up to three steps. 
-    select 
+    -- This table shifts the i and j indices of each letter in a consistent
+    -- direction for 0 to 3 steps. 
+    -- This will allow us to find 3- and 4-length strings in any direction.
+    select
+    step,
     d_i,
     d_j,
-    i + d_i as i_1,
-    j + d_j as j_1,
-    i + 2 * d_i as i_2,
-    j + 2 * d_j as j_2,
-    i + 3 * d_i as i_3,
-    j + 3 * d_j as j_3,
+    i - step * d_i as i,
+    j - step * d_j as j,
     letter
-    from letters cross join shift_ij
+    from steps cross join shift_i cross join shift_j cross join letters 
+    where not (d_i == 0 and d_j == 0)
 ), three_character_strings as 
 (
     -- Three character strings formed by concatenating letters shifted
-    -- in the same direction by two steps. 
+    -- in the same direction by 0 to 2 steps. 
     select
-    t1.d_i,
-    t1.d_j,
-    i,
-    j,
-    t0.letter as c_0,
-    t1.letter as c_1,
-    t2.letter as c_2,
-    c_0 || c_1 || c_2 as three_character_string
-    from letters t0
-    inner join shifted_letters t1 on t0.i = t1.i_1 and t0.j = t1.j_1
-    inner join shifted_letters t2 on t0.i = t2.i_2 and t0.j = t2.j_2 and t1.d_i = t2.d_i and t1.d_j = t2.d_j
+    step_0.d_i,
+    step_0.d_j,
+    step_0.i,
+    step_0.j,
+    step_0.letter || step_1.letter || step_2.letter as three_character_string
+    from (select * from shifted_letters where step == 0) step_0
+    inner join (select * from shifted_letters where step == 1) step_1
+    on step_0.i = step_1.i and step_0.j = step_1.j and step_0.d_i = step_1.d_i and step_0.d_j = step_1.d_j
+    inner join (select * from shifted_letters where step == 2) step_2
+    on step_0.i = step_2.i and step_0.j = step_2.j and step_0.d_i = step_2.d_i and step_0.d_j = step_2.d_j
 ), four_character_strings as 
 (
     -- Shift one more time to get four character strings. 
     select
-    three_character_string || t3.letter as four_character_string
-    from three_character_strings t2
-    inner join shifted_letters t3 on t2.i = t3.i_3 and t2.j = t3.j_3 and t2.d_i = t3.d_i and t2.d_j = t3.d_j
+    three_character_string || step_3.letter as four_character_string
+    from three_character_strings step_2
+    inner join (select * from shifted_letters where step == 3) step_3
+    on step_2.i = step_3.i and step_2.j = step_3.j and step_2.d_i = step_3.d_i and step_2.d_j = step_3.d_j
 ), central_diagonal_mas_indices as 
 (
     -- Find all diagonal MAS strings (i.e. ones where both d_i and d_j != 0).
     -- Get the i, j location of the central character (A). 
     -- Give each occurence an id. 
     select 
-    i - d_i as i, 
-    j - d_j as j, 
+    i + d_i as i, 
+    j + d_j as j, 
     row_number() over () as mas_id 
     from three_character_strings 
     where three_character_string == 'MAS'
