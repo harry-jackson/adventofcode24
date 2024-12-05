@@ -4,7 +4,7 @@ with recursive input_data as
     select 
     raw_input,
     row_number() over () as instruction_id,
-    from read_csv('data/day05.txt', header = false, columns = {'raw_input': 'varchar'})
+    from read_csv('data/test05.txt', header = false, columns = {'raw_input': 'varchar'})
 ), order_instructions as 
 (
     select
@@ -13,7 +13,7 @@ with recursive input_data as
     cast(order_pair[2] as int) as page_after
     from input_data
     where raw_input like '%|%'
-), manual_middle_page as
+), manual_lists as
 (
     select
     instruction_id as manual_id,
@@ -21,68 +21,95 @@ with recursive input_data as
     cast(manual_page_list[cast((len(manual_page_list) + 1) / 2 as int)] as int) as middle_page
     from input_data
     where raw_input like '%,%'
-), manuals as 
+), manual_subsequent_pages as
 (
     select
     manual_id,
-    cast(unnest(manual_page_list) as int) as page_number
-    from manual_middle_page
-), x as (
-    select (o1.page_before) as page_number,
-        0 as page_order
-        from (select page_before from order_instructions) o1
-        anti join (select page_after as page_before from order_instructions) o2
-        using (page_before)
-), page_ordering_helper as 
-(
-    select distinct(o1.page_before) as page_number,
-        0 as page_order
-        from (select page_before from order_instructions) o1
-        anti join (select page_after as page_before from order_instructions) o2
-        using (page_before)
-    union all
-        select 
-            distinct(page_after) as page_number,
-            page_order + 1 as page_order
-        from page_ordering_helper o3
-        inner join order_instructions o4
-        on o3.page_number = o4.page_before
-), page_ordering as
+    generate_subscripts(manual_page_list, 1) as page_index,
+    cast(unnest(manual_page_list) as int) as page_number,
+    manual_page_list[page_index + 1:] as subsequent_page_number_list
+    from manual_lists
+), manual_ordering as 
 (
     select
+    manual_id,
+    page_number,
+    cast(unnest(subsequent_page_number_list) as int) as subsequent_page_number
+    from manual_subsequent_pages
+), failing_manual_ids as
+(
+    select
+    distinct(manual_id)
+    from manual_ordering M
+    inner join order_instructions I
+    on M.subsequent_page_number = I.page_before and M.page_number = I.page_after
+), passing_manual_lists as
+(
+    select *
+    from manual_lists 
+    anti join failing_manual_ids
+    using (manual_id)
+), failing_manual_lists as
+(
+    select L.*
+    from manual_lists L
+    inner join failing_manual_ids F
+    on L.manual_id = F.manual_id
+), failing_manual_pages as
+(
+    select 
+    manual_id,
+    unnest(manual_page_list) as page_before,
+    manual_page_list
+    from failing_manual_lists
+), failing_manual_all_orders as
+(
+    select 
+    manual_id,
+    page_before,
+    unnest(manual_page_list) as page_after
+    from failing_manual_pages
+), failing_manual_valid_orders as
+(
+    select O.*
+    from failing_manual_all_orders O
+    inner join order_instructions I
+    on O.page_before = I.page_before and O.page_after = I.page_after
+), failing_manual_ordering as
+(
+    select distinct
+            o1.manual_id,
+            page_before as page_number,
+            0 as page_order
+        from failing_manual_valid_orders o1
+        anti join (select manual_id, page_after as page_before from failing_manual_valid_orders) o2
+        using (manual_id, page_before)
+    union all
+    select distinct
+        o3.manual_id,
+        page_after as page_number,
+        page_order + 1 as page_order
+    from failing_manual_ordering o3
+    inner join 
+        (select F.* from failing_manual_valid_orders F) o4
+    on o3.manual_id = o4.manual_id and o3.page_number = o4.page_before
+    
+), failing_manual_order_indices as 
+(
+    select
+    manual_id,
     page_number,
     max(page_order) as page_order
-    from page_ordering_helper
-    group by page_number
-), page_order_checks as 
+    from failing_manual_ordering
+    group by manual_id, page_number
+), fixed_failing_manuals as
 (
-    select
+    select 
     manual_id, 
-    m.page_number,
-    page_order,
-    page_order - lag(page_order, 1) over (partition by manual_id) as page_order_diff,
-    page_order_diff > 0 as pass
-    from manuals m
-    inner join page_ordering p
-    on m.page_number = p.page_number
-), manual_checks as 
-(
-    select
-    manual_id,
-    bool_and(pass) as pass
-    from page_order_checks
-    where pass is not null
+    list(page_number order by page_order) as page_number_list
+    from failing_manual_order_indices
     group by manual_id
-    order by manual_id   
-), passing_manuals as
-(
-    select
-    c.manual_id,
-    middle_page
-    from manual_checks c
-    inner join manual_middle_page m
-    on c.manual_id = m.manual_id
-    where pass
+    order by manual_id
 )
 
-select * from x
+select * from fixed_failing_manuals
