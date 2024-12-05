@@ -16,8 +16,8 @@ with input_data as
     unnest(letter_list) as letter
     from input_data 
 ), 
-steps as (select * from (values (0), (1), (2), (3)) as t(step)),
-shift_i as (select * from (values (-1), (0), (1)) as t (d_i)),
+steps as (select unnest(range(4)) as step),
+shift_i as (select unnest(range(-1, 2)) as d_i),
 shift_j as (select d_i as d_j from shift_i),
 shifted_letters as
 (
@@ -84,4 +84,3 @@ shifted_letters as
     (select count(*) from four_character_strings where four_character_string == 'XMAS') as part_1,
     -- Part 2 = distinct diagonal MAS strings that cross in the middle.
     (select count(*) from x_mas_locations) as part_2
---
