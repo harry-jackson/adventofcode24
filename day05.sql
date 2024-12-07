@@ -1,52 +1,52 @@
-with recursive input_data as
-(
-    -- Read input data into one column. 
-    select 
-        raw_input,
-        row_number() over () as instruction_id,
-    from read_csv('data/day05.txt', header = false, columns = {'raw_input': 'varchar'})
-), order_instructions as 
-(
-    -- Extract ordered pairs of pages (before and after pages).
-    select
-        string_split(raw_input, '|') as order_pair,
-        cast(order_pair[1] as int) as page_before,
-        cast(order_pair[2] as int) as page_after
-    from input_data
-    where raw_input like '%|%'
-), manual_lists as
-(
-    -- Extract lists of pages in each manual, with a manual id. 
-    select
-        instruction_id as manual_id,
-        string_split(raw_input, ',') as manual_page_list,
-        cast(manual_page_list[cast((len(manual_page_list) + 1) / 2 as int)] as int) as middle_page
-    from input_data
-    where raw_input like '%,%'
-), unnested_manuals as
-(
-    -- Unnest the pages for each manual. 
-    select 
-        manual_id,
-        unnest(manual_page_list) as page_before,
-        manual_page_list
-    from manual_lists
-), possible_page_orderings as
-(
-    -- Unnest again to get all possible orders for each pair of pages. 
-    select 
-        manual_id,
-        page_before,
-        unnest(manual_page_list) as page_after
-    from unnested_manuals
-), valid_page_orderings as
-(
-    -- Get the valid page orderings by joining on to the instructions. 
-    select O.*
-    from possible_page_orderings O
-    inner join order_instructions I
-    on O.page_before = I.page_before and O.page_after = I.page_after
-), manual_order_finding_recursive as
+-- Read input data into one column. 
+create temp table input_data as
+select 
+    raw_input,
+    row_number() over () as instruction_id,
+from read_csv('data/day05.txt', header = false, columns = {'raw_input': 'varchar'});
+
+-- Extract ordered pairs of pages (before and after pages).
+create temp table order_instructions as 
+select
+    string_split(raw_input, '|') as order_pair,
+    cast(order_pair[1] as int) as page_before,
+    cast(order_pair[2] as int) as page_after
+from input_data
+where raw_input like '%|%';
+
+-- Extract lists of pages in each manual, with a manual id. 
+create temp table manual_lists as
+select
+    instruction_id as manual_id,
+    string_split(raw_input, ',') as manual_page_list,
+    cast(manual_page_list[cast((len(manual_page_list) + 1) / 2 as int)] as int) as middle_page
+from input_data
+where raw_input like '%,%';
+
+-- Unnest the pages for each manual. 
+create temp table unnested_manuals as
+select 
+    manual_id,
+    unnest(manual_page_list) as page_before,
+    manual_page_list
+from manual_lists;
+
+-- Unnest again to get all possible orders for each pair of pages. 
+create temp table possible_page_orderings as 
+select 
+    manual_id,
+    page_before,
+    unnest(manual_page_list) as page_after
+from unnested_manuals;
+
+-- Get the valid page orderings by joining on to the instructions. 
+create temp table valid_page_orderings as
+select O.*
+from possible_page_orderings O
+inner join order_instructions I
+on O.page_before = I.page_before and O.page_after = I.page_after;
+
+with recursive manual_order_finding_recursive as
 (
     -- Recursive CTE to get an order number for each page within each manual. 
 

@@ -31,8 +31,6 @@ cross join operators;
 
 with recursive calculations as (
     -- Recursive CTE to try all three operators at each calculation step.
-    -- Use where condition R.calculated_number <= B.target_number
-    -- to cut off calculations that exceed the target. 
     -- Keep track of operators used in operator_string
     -- to filter out calculations that used concatenation later. 
 
@@ -51,6 +49,8 @@ with recursive calculations as (
     union all
 
     -- Recursive step
+    -- Use where condition R.calculated_number <= B.target_number
+    -- to cut off calculations that exceed the target. 
     select 
         B.calculation_id,
         B.target_number,
@@ -81,6 +81,6 @@ with recursive calculations as (
 
 select 
     -- Sum of targets from distinct working calculations (not using concatenation). 
-    (select sum(target_number) from (select distinct target_number from working_calculations_without_concatenation)) as part_1,
+    (select sum(target_number) from (select distinct calculation_id, target_number from working_calculations_without_concatenation)) as part_1,
     -- Sum of targets from all distinct working calculations.
-    (select sum(target_number) from (select distinct target_number from working_calculations)) as part_2
+    (select sum(target_number) from (select distinct calculation_id, target_number from working_calculations)) as part_2
