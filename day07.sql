@@ -7,11 +7,11 @@ from (values ('+'), ('*'), ('|')) operators(operator);
 -- Read csv file, split into target and inputs, add a calculation id.
 create temp table raw_input_data as
 select 
-raw_input,
-string_split(raw_input, ': ') as input_pair,
-input_pair[1] as target_number,
-string_split(input_pair[2], ' ') as input_list,
-row_number() over () as calculation_id
+    raw_input,
+    string_split(raw_input, ': ') as input_pair,
+    input_pair[1] as target_number,
+    string_split(input_pair[2], ' ') as input_list,
+    row_number() over () as calculation_id
 from read_csv('data/day07.txt', header = false, columns = {'raw_input': 'varchar'});
 
 -- Unnest the inputs, 
