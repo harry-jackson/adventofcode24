@@ -58,7 +58,7 @@ def draw_image(robots: List[Robot], floor_shape: npt.NDArray[np.int64], steps) -
         M[tuple(final_position.p)] = 1
     return M
 
-def matrix_entropy(m: npt.NDArray[np.bool]) -> float:
+def matrix_entropy(M: npt.NDArray[np.bool]) -> float:
     """
     Appproximates the entropy of a matrix by compressing it with gzip.
     Gives the number of compressed bytes divided by the number of original bytes. 
@@ -71,8 +71,11 @@ def matrix_entropy(m: npt.NDArray[np.bool]) -> float:
     compressed_M_bytes = gzip.compress(M_bytes)
     return len(compressed_M_bytes) / len(M_bytes)
 
+
+# After 101 iterations the x values will repeat, similarly 103 iterations for y values.
+# So the whole thing will start repeating after 101 * 103 (= prod(floor_shape)) iterations.
 matrix_entropies = []
-for steps in range(10000):
+for steps in range(np.prod(floor_shape)):
     M = draw_image(robots, floor_shape, steps)  
 
     matrix_entropies.append(matrix_entropy(M))

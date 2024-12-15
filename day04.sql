@@ -37,7 +37,7 @@ shifted_letters as
 ), three_character_strings as 
 (
     -- Three character strings formed by concatenating letters shifted
-    -- in the same direction by 0 to 2 steps. 
+    -- in the same direction by 0 to 2 steps.
     select
     d_i,
     d_j,
@@ -49,7 +49,7 @@ shifted_letters as
     group by d_i, d_j, i, j
 ), four_character_strings as 
 (
-    -- Similar for four-character strings. 
+    -- Similar for four-character strings.
     select
     string_agg(letter, '') as four_character_string
     from shifted_letters
@@ -57,7 +57,7 @@ shifted_letters as
 ), central_diagonal_mas_indices as 
 (
     -- Find all diagonal MAS strings (i.e. ones where both d_i and d_j != 0).
-    -- Get the i, j location of the central character (A). 
+    -- Get the i, j location of the central character (A).
     -- Give each occurence an id. 
     select 
     i + d_i as i, 
@@ -68,7 +68,7 @@ shifted_letters as
     and d_i * d_j != 0
 ), x_mas_locations as
 (
-    -- Get distinct diagonal MAS strings where the A is in the same place. 
+    -- Get distinct diagonal MAS strings where the A is in the same place.
     select 
     t0.i,
     t0.j,
