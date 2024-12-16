@@ -64,7 +64,7 @@ def matrix_entropy(M: npt.NDArray[np.bool]) -> float:
     Gives the number of compressed bytes divided by the number of original bytes. 
 
     The robots usually look like random noise, so their position matrix will have high entropy. 
-    When they form an image of a Christmas tree , their position matrix will have some regularity, 
+    When they form an image of a Christmas tree, their position matrix will have some regularity, 
     and so have lower entropy. 
     """
     M_bytes = M.tobytes()

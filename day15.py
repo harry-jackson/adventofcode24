@@ -106,7 +106,7 @@ def drive_robot(M: npt.NDArray[np.str_], instructions: List[str]) -> npt.NDArray
         for obstacle in all_pushed_objects:
             M[obstacle.i, obstacle.j] = obstacle.icon
 
-        # the robot is the first item in the returned list (check that this is true)
+        # the moved robot is the first item in the returned list (check that this is true)
         robot = all_pushed_objects[0]
         assert type(robot) is Robot
 
