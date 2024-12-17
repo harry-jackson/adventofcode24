@@ -2,9 +2,6 @@ from math import log10, ceil
 from functools import cache
 from typing import List
 
-with open('data/day11.txt', 'r') as f:
-    stones = [int(w) for w in f.read().strip().split(' ')]
-
 def n_digits(n: int) -> int:
     """Number of digits of n."""
     if n == 0:
@@ -52,5 +49,12 @@ def calc_stones(input_stones: List[int], N: int = 25) -> int:
 
     return res
 
-print(f'Part 1: {calc_stones(stones, N = 25)}')
-print(f'Part 2: {calc_stones(stones, N = 75)}')
+def main():
+    with open('data/day11.txt', 'r') as f:
+        stones = [int(w) for w in f.read().strip().split(' ')]
+
+    print(f'Part 1: {calc_stones(stones, N = 25)}')
+    print(f'Part 2: {calc_stones(stones, N = 75)}')
+
+if __name__ == '__main__':
+    main()

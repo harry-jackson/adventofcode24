@@ -12,13 +12,6 @@ class Robot:
     p: npt.NDArray[np.int64]
     v: npt.NDArray[np.int64]
 
-re_input_pattern = re.compile(r'[0-9\-]+')
-
-robots = []
-for line in open('data/day14.txt', 'r'):
-    p_x, p_y, v_x, v_y = re_input_pattern.findall(line)
-    robots.append(Robot(p = np.int64([p_x, p_y]), v = np.int64([v_x, v_y])))
-
 def move_robot(robot: Robot, floor_shape: npt.NDArray[np.int64], steps: int) -> Robot:
     """Move the robot a certain number of steps, and return a robot at the new position."""
     return Robot(p = (robot.p + robot.v * steps) % floor_shape, v = robot.v)
@@ -30,21 +23,6 @@ def get_quadrant(robot: Robot, floor_shape: npt.NDArray[np.int64]) -> Tuple[int,
         return None
     else:
         return tuple(np.sign(robot.p - centre).tolist())
-
-floor_shape = np.int64([101, 103])
-
-steps = 100
-
-quadrants = defaultdict(lambda: 0)
-for robot in robots:
-    final_position = move_robot(robot, floor_shape, steps)
-    
-    q = get_quadrant(final_position, floor_shape)
-
-    if q is not None:
-        quadrants[q] += 1
-
-part_1 = prod(quadrants.values())
 
 def draw_image(robots: List[Robot], floor_shape: npt.NDArray[np.int64], steps) -> npt.NDArray[np.bool]:
     """
@@ -71,26 +49,54 @@ def matrix_entropy(M: npt.NDArray[np.bool]) -> float:
     compressed_M_bytes = gzip.compress(M_bytes)
     return len(compressed_M_bytes) / len(M_bytes)
 
+def main():
+    re_input_pattern = re.compile(r'[0-9\-]+')
 
-# After 101 iterations the x values will repeat, similarly 103 iterations for y values.
-# So the whole thing will start repeating after 101 * 103 (= prod(floor_shape)) iterations.
-matrix_entropies = []
-for steps in range(np.prod(floor_shape)):
-    M = draw_image(robots, floor_shape, steps)  
+    robots = []
+    for line in open('data/day14.txt', 'r'):
+        p_x, p_y, v_x, v_y = re_input_pattern.findall(line)
+        robots.append(Robot(p = np.int64([p_x, p_y]), v = np.int64([v_x, v_y])))
 
-    matrix_entropies.append(matrix_entropy(M))
+    floor_shape = np.int64([101, 103])
 
-# The picture of a Christmas tree has the lowest entropy of all the matrices. 
-# Find the number of steps to get there.
-steps_to_lowest_entropy = matrix_entropies.index(min(matrix_entropies))
+    steps = 100
 
-M = draw_image(robots, floor_shape, steps_to_lowest_entropy)
-M_char = M.astype(str)
-M_char[~M] = ' '
-M_char[M] = '@'
+    quadrants = defaultdict(lambda: 0)
+    for robot in robots:
+        final_position = move_robot(robot, floor_shape, steps)
+        
+        q = get_quadrant(final_position, floor_shape)
 
-for row in M_char.transpose():
-    print(''.join(row.tolist()))
+        if q is not None:
+            quadrants[q] += 1
 
-print(f'Part 1: {part_1}')
-print(f'Part 2: {steps_to_lowest_entropy}')
+    part_1 = prod(quadrants.values())
+
+
+
+
+    # After 101 iterations the x values will repeat, similarly 103 iterations for y values.
+    # So the whole thing will start repeating after 101 * 103 (= prod(floor_shape)) iterations.
+    matrix_entropies = []
+    for steps in range(np.prod(floor_shape)):
+        M = draw_image(robots, floor_shape, steps)  
+
+        matrix_entropies.append(matrix_entropy(M))
+
+    # The picture of a Christmas tree has the lowest entropy of all the matrices. 
+    # Find the number of steps to get there.
+    steps_to_lowest_entropy = matrix_entropies.index(min(matrix_entropies))
+
+    M = draw_image(robots, floor_shape, steps_to_lowest_entropy)
+    M_char = M.astype(str)
+    M_char[~M] = ' '
+    M_char[M] = '@'
+
+    for row in M_char.transpose():
+        print(''.join(row.tolist()))
+
+    print(f'Part 1: {part_1}')
+    print(f'Part 2: {steps_to_lowest_entropy}')
+
+if __name__ == '__main__':
+    main()

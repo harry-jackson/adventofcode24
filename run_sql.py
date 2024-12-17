@@ -9,7 +9,11 @@
 import duckdb
 from sys import argv
 
-with open(argv[1], 'r') as f:
-    sql_code = ''.join(f.readlines())
+def main():
+    with open(argv[1], 'r') as f:
+        sql_code = ''.join(f.readlines())
 
-print(duckdb.sql(sql_code))
+    print(duckdb.sql(sql_code))
+
+if __name__ == '__main__':
+    main()

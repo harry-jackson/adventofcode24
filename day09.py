@@ -13,21 +13,6 @@ class Gap:
     location: int
     length: int
 
-with open('data/day09.txt', 'r') as f:
-    input_string = f.read().strip()
-
-input_nums = [int(char) for char in input_string]
-
-files = []
-gaps = []
-location = 0
-for i, n in enumerate(input_nums):
-    if i % 2 == 0:
-        files.append(File(file_id = i // 2, location = location, length = n))
-    else:
-        gaps.append(Gap(location = location, length = n))
-    location += n
-
 def move_files(files: List[File], gaps: List[Gap], partial_moves: bool = True) -> List[File]:
     """
     Takes a list of files and gaps. Moves files from the right into the leftmost gap.
@@ -72,8 +57,28 @@ def checksum(files: List[File]) -> int:
         res += sum([file.file_id * i for i in range(file.location, file.location + file.length)])
     return res
 
-part_1 = checksum(move_files(files, gaps))
-part_2 = checksum(move_files(files, gaps, partial_moves = False))
+def main():
+    with open('data/day09.txt', 'r') as f:
+        input_string = f.read().strip()
 
-print(f'Part 1: {part_1}')
-print(f'Part 2: {part_2}')
+    input_nums = [int(char) for char in input_string]
+
+    files = []
+    gaps = []
+    location = 0
+    for i, n in enumerate(input_nums):
+        if i % 2 == 0:
+            files.append(File(file_id = i // 2, location = location, length = n))
+        else:
+            gaps.append(Gap(location = location, length = n))
+        location += n
+
+
+    part_1 = checksum(move_files(files, gaps))
+    part_2 = checksum(move_files(files, gaps, partial_moves = False))
+
+    print(f'Part 1: {part_1}')
+    print(f'Part 2: {part_2}')
+
+if __name__ == '__main__':
+    main()

@@ -3,6 +3,8 @@ import numpy.typing as npt
 from typing import List, Tuple
 from dataclasses import dataclass
 
+directions = {'^': (-1, 0), 'v': (1, 0), '<': (0, -1), '>': (0, 1)}
+
 @dataclass
 class Obstacle:
     i: int
@@ -35,8 +37,6 @@ def index_where(m: npt.NDArray[np.bool]) -> List[Tuple]:
     indices = indices_where(m)
     assert len(indices) == 1
     return indices[0]
-
-directions = {'^': (-1, 0), 'v': (1, 0), '<': (0, -1), '>': (0, 1)}
 
 def pushed_objects(m: npt.NDArray[np.str_], coords: Tuple[int, int], direction: Tuple[int, int]) -> List[Obstacle]:
     """
@@ -117,22 +117,26 @@ def score_map(M: npt.NDArray[np.int8]) -> int:
     boulder_indices = indices_where(np.isin(M, ('[', 'O')))
     return sum ([100 * i + j for i, j in boulder_indices])
 
+def main():
+    
+    grid_rows = []
+    instructions = []
+    for line in open('data/day15.txt', 'r'):
+        match chars := list(line.strip()):
+            case ['#', *_]:
+                grid_rows.append(chars)
+            case ['<' | 'v' | '>' | '^', *_]:
+                instructions += chars
 
-grid_rows = []
-instructions = []
-for line in open('data/day15.txt', 'r'):
-    match chars := list(line.strip()):
-        case ['#', *_]:
-            grid_rows.append(chars)
-        case ['<' | 'v' | '>' | '^', *_]:
-            instructions += chars
+    M = np.array(grid_rows)
 
-M = np.array(grid_rows)
+    M_wide = np.repeat(M, 2, axis=1)
+    M_wide[:, ::2] = np.where(M_wide[:, ::2] == 'O', '[', M_wide[:, ::2])  
+    M_wide[:, 1::2] = np.where(M_wide[:, 1::2] == 'O', ']', M_wide[:, 1::2])  
+    M_wide[:, 1::2] = np.where(M_wide[:, 1::2] == '@', '.', M_wide[:, 1::2])  
 
-M_wide = np.repeat(M, 2, axis=1)
-M_wide[:, ::2] = np.where(M_wide[:, ::2] == 'O', '[', M_wide[:, ::2])  
-M_wide[:, 1::2] = np.where(M_wide[:, 1::2] == 'O', ']', M_wide[:, 1::2])  
-M_wide[:, 1::2] = np.where(M_wide[:, 1::2] == '@', '.', M_wide[:, 1::2])  
+    print(f'Part 1: {score_map(drive_robot(M, instructions))}')
+    print(f'Part 2: {score_map(drive_robot(M_wide, instructions))}')
 
-print(f'Part 1: {score_map(drive_robot(M, instructions))}')
-print(f'Part 2: {score_map(drive_robot(M_wide, instructions))}')
+if __name__ == '__main__':
+    main()
