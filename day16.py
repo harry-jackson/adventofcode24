@@ -71,16 +71,15 @@ def main():
             continue
 
         connected_edges = list(G.edges((d, i, j)))
+        connected_nodes = list(G.neighbors((d, i, j)))
 
-        if len(connected_edges) == 2:
+        if len(connected_edges) == 2 and not any([node in [start_point, end_point] for node in connected_nodes]):
+            
             distance = sum([G.edges[e]['distance'] for e in connected_edges])
-            connected_nodes = list(G.neighbors((d, i, j)))
-
-            if any([node in [start_point, end_point] for node in connected_nodes]):
-                continue
 
             intermediate_node_list = [G.edges[e]['intermediate_nodes'] for e in connected_edges]
             intermediate_nodes = intermediate_node_list[0] + intermediate_node_list[1] + [(d, i, j)]
+            
             G.add_edge(connected_nodes[0], connected_nodes[1], distance = distance, intermediate_nodes = intermediate_nodes)
             nodes_to_remove.append((d, i, j))
 

@@ -68,8 +68,8 @@ class Computer:
     def get_register(self, register):
         self.__getattribute__(register)
 
-    def set_instructions(self, instructions):
-        self.OpCodes = instructions
+    def set_op_codes(self, op_codes):
+        self.OpCodes = op_codes
 
     def _dv(self, operand):
         return self.A // (2  ** self.combo(operand))
@@ -106,9 +106,9 @@ def initialize_computer(lines: List[str]):
         match line.strip().replace(':', '').split(' '):
             case ['Register', r, n]:
                 computer.set_register(r, int(n))
-            case ['Program', instructions]:
-                program = [int(i) for i in instructions.split(',')]
-                computer.set_instructions(program)
+            case ['Program', op_code_string]:
+                program = [int(i) for i in op_code_string.split(',')]
+                computer.set_op_codes(program)
 
     return computer
 
@@ -118,7 +118,7 @@ def main():
 
     computer = initialize_computer(lines)
     res = computer.run()
-    part_1 = ''.join([str(n) for n in res])
+    part_1 = ','.join([str(n) for n in res])
 
     # Part 2: Notice that the program is one set of operations, 
     # with a loop at the end going back to the beginning. 
@@ -140,9 +140,8 @@ def main():
     target_As = [0]
     for i in reversed(range(len(op_codes))):
 
-        last_target_A = target_As[-1]
-        
-        A = last_target_A * 8
+        A = target_As[-1] * 8
+
         while True:
             computer = initialize_computer(lines)
             computer.set_register('A', A)
