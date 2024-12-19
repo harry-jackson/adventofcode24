@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import List, Callable
 
 
@@ -11,7 +10,7 @@ class Computer:
     Output: List[int]
     Operations: List[Callable]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.OpCodes = []
         self.A = 0
         self.B = 0
@@ -20,7 +19,7 @@ class Computer:
         self.Output = []
         self.Operations = [self.adv, self.bxl, self.bst, self.jnz, self.bxc, self.out, self.bdv, self.cdv]
 
-    def step(self):
+    def step(self) -> bool:
         
         if self.Pointer < 0 or self.Pointer >= len(self.OpCodes):
             return True
@@ -34,7 +33,7 @@ class Computer:
         
         return False
     
-    def run(self, max_loops = None):
+    def run(self, max_loops: int | None = None) -> List[int]:
         halt = False
         loops = 0
         while not halt:
@@ -48,7 +47,7 @@ class Computer:
     def debug(self):
         print(f'A: {self.A}, B: {self.B}, C: {self.C}, Pointer: {self.Pointer}')
 
-    def combo(self, operand):
+    def combo(self, operand: int) -> int:
         if operand >= 0 and operand <= 3:
             return operand
         elif operand == 4:
@@ -62,44 +61,44 @@ class Computer:
         else:
             raise ValueError('Invalid operand')
         
-    def set_register(self, register, value):
+    def set_register(self, register: str, value: int) -> None:
         self.__setattr__(register, value)
 
-    def get_register(self, register):
-        self.__getattribute__(register)
+    def get_register(self, register: str) -> int:
+        return self.__getattribute__(register)
 
-    def set_op_codes(self, op_codes):
+    def set_op_codes(self, op_codes: List[int]) -> None:
         self.OpCodes = op_codes
 
-    def _dv(self, operand):
+    def _dv(self, operand: int) -> int:
         return self.A // (2  ** self.combo(operand))
 
-    def adv(self, operand):
+    def adv(self, operand: int) -> None:
         self.A = self._dv(operand)
     
-    def bxl(self, operand):
+    def bxl(self, operand: int) -> None:
         self.B = self.B ^ operand
     
-    def bst(self, operand):
+    def bst(self, operand: int) -> None:
         self.B = self.combo(operand) % 8
 
-    def jnz(self, operand):
+    def jnz(self, operand: int) -> None:
         if self.A != 0:
             self.Pointer = operand - 2
 
-    def bxc(self, operand):
+    def bxc(self, operand: int) -> None:
         self.B = self.B ^ self.C
 
-    def out(self, operand):
+    def out(self, operand: int) -> None:
         self.Output.append(self.combo(operand) % 8)
 
-    def bdv(self, operand):
+    def bdv(self, operand: int) -> None:
         self.B = self._dv(operand)
 
-    def cdv(self, operand):
+    def cdv(self, operand: int) -> None:
         self.C = self._dv(operand)
 
-def initialize_computer(lines: List[str]):
+def initialize_computer(lines: List[str]) -> Computer:
     computer = Computer()
 
     for line in lines:

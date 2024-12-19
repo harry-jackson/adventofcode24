@@ -32,7 +32,7 @@ def move_files(files: List[File], gaps: List[Gap], partial_moves: bool = True) -
                 break
             elif gap.length > 0:
                 # Gap length must be > 0 for any files to move.
-                # If partial_moves is True, the gap must be big enough for the whole file.
+                # If partial_moves is False, the gap must be big enough for the whole file.
                 if not partial_moves and gap.length < file.length:
                     continue
 

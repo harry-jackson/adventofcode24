@@ -17,7 +17,7 @@ def index_where(m: npt.NDArray[np.bool]) -> List[Tuple]:
     assert len(indices) == 1
     return indices[0]
 
-def get_shortest_path_if_exists(block_coords, grid_shape):
+def get_shortest_path_if_exists(block_coords: List[Tuple[int, int]], grid_shape: Tuple[int, int]) -> List[Tuple[int, int]] | None:
     
     M = np.zeros(grid_shape, dtype = np.int8)
 
